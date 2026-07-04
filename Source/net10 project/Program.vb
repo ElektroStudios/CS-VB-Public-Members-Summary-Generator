@@ -770,13 +770,18 @@ Public Module Program
         Dim executableName As String = $"{Process.GetCurrentProcess().ProcessName}.exe"
 
         ConsoleHelper.WriteColoredTextLine("Usage:", ConsoleColor.DarkCyan)
-        Console.WriteLine($"  {executableName} <directory_path> [-r|--recursive]")
+        Console.WriteLine($"  {executableName} <directory_path> [options]")
         Console.WriteLine()
-        ConsoleHelper.WriteColoredTextLine("Arguments:", ConsoleColor.DarkCyan)
-        Console.WriteLine("  directory_path      Path to the root directory containing *.cs / *.vb files.")
-        Console.WriteLine("  -r, --recursive     Optional. Processes all subdirectories recursively.")
-        Console.WriteLine("  -t, --test          Optional. Runs the application in test mode without modifying any files.")
+
+        ConsoleHelper.WriteColoredTextLine("Mandatory Arguments:", ConsoleColor.DarkCyan)
+        Console.WriteLine("  directory_path    The path to the root directory containing the *.cs or *.vb source-code files to process.")
         Console.WriteLine()
+
+        ConsoleHelper.WriteColoredTextLine("Options:", ConsoleColor.DarkCyan)
+        Console.WriteLine("  -r, --recursive   Recursively process source-code files in all subdirectories.")
+        Console.WriteLine("  -t, --test        Runs the application in Test Mode (dry-run), simulating the entire process without modifying actual files.")
+        Console.WriteLine()
+
         ConsoleHelper.WriteColoredTextLine("Examples:", ConsoleColor.DarkCyan)
         Console.WriteLine($"  {executableName} ""C:\MySolution""")
         Console.WriteLine($"  {executableName} ""C:\MySolution"" -r")
