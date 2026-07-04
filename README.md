@@ -77,6 +77,10 @@ The application scans a given directory to process supported source-code files, 
 
 ![screenshot2](/Images/screenshot2.png)
 
+![screenshot3](/Images/screenshot3.png)
+
+![screenshot4](/Images/screenshot4.png)
+
 ## 📝 Requirements
 
 - Microsoft Windows OS.
