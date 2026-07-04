@@ -114,12 +114,12 @@ Generate and insert public member summaries only for files in the specified root
 CS-VB_PMS_Gen.exe "C:\MySolution"
 ```
 
-Recursively update all source files across all subdirectories:
+Recursively generate and insert public member summaries for files within the specified root directory and its subdirectories:
 ```bash
 CS-VB_PMS_Gen.exe "C:\MySolution" -r
 ```
 
-Run a safe simulation dry-run recursively to validate the execution path without modifying code:
+Run a safe simulation dry-run recursively to validate the execution path without modifying actual files:
 ```bash
 CS-VB_PMS_Gen.exe "C:\MySolution" -r --test
 ```
