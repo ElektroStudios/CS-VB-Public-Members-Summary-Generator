@@ -95,14 +95,14 @@ Download the latest release by clicking [here](https://github.com/ElektroStudios
 CS-VB_PMS_Gen.exe <directory_path> [options]
 ```
 
-| Mandatory Arguments | Description |
+| <span style="white-space: nowrap;">Mandatory Arguments</span> | Description |
 | :--- | :--- |
-| **directory_path** | The path to the root directory containing the `*.cs` or `*.vb` source-code files to process. |
+| **<span style="white-space: nowrap;">directory_path</span>** | The path to the root directory containing the `*.cs` or `*.vb` source-code files to process. |
 
-| Option | Description |
+| <span style="white-space: nowrap;">Option</span> | Description |
 | :--- | :--- |
-| **<code>-r,&nbsp;--recursive</code>** | Recursively process source-code files in all subdirectories. |
-| **<code>-t,&nbsp;--test</code>** | Runs the application in Test Mode (dry-run). Simulates the entire parsing and validation process without writing any changes to disk. |
+| **<span style="white-space: nowrap;">-r, --recursive</span>** | Recursively process source-code files in all subdirectories. |
+| **<span style="white-space: nowrap;">-t, --test</span>** | Runs the application in Test Mode (dry-run). Simulates the entire parsing and validation process without writing any changes to disk. |
 
 ### 🚀 Examples
 
