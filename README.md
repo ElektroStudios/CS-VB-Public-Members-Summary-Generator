@@ -103,8 +103,8 @@ CS-VB_PMS_Gen.exe <directory_path> [options]
 
 | Option | Description |
 | :--- | :--- |
-| **<code>-r,&nbsp;--recursive</code>** | Recursively process source-code files in all subdirectories. |
-| **<code>-t,&nbsp;--test</code>** | Runs the application in Test Mode (dry-run). Simulates the entire parsing and validation process without writing any changes to disk. |
+| **<code>&#8209;r</code>**,&nbsp;**<code>&#8209;&#8209;recursive</code>** | Recursively process source-code files in all subdirectories. |
+| **<code>&#8209;t</code>**,&nbsp;**<code>&#8209;&#8209;test</code>** | Runs the application in Test Mode (dry-run). Simulates the entire parsing and validation process without writing any changes to disk. |
 
 ### 🚀 Examples
 
