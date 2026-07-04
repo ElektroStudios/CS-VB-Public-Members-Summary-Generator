@@ -102,10 +102,10 @@ CS-VB_PMS_Gen.exe <directory_path> [options]
 
 ### Options
 
-* **`-r, --recursive`**  
-  If specified, processes all subdirectories recursively.
-* **`-t, --test`**  
-  If specified, runs the application in Test Mode (dry-run). It simulates the entire parsing and validation process without writing any changes to disk.
+| Option | Description |
+| :--- | :--- | :--- |
+| **`-r, --recursive`** | Recursively process source-code files in all subdirectories. |
+| **`-t, --test`** | Runs the application in Test Mode (dry-run). Simulates the entire parsing and validation process without writing any changes to disk. |
 
 ### 🚀 Examples
 
