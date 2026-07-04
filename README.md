@@ -95,7 +95,7 @@ Download the latest release by clicking [here](https://github.com/ElektroStudios
 CS-VB_PMS_Gen.exe <directory_path> [options]
 ```
 
-### Arguments
+### Mandatory Arguments
 
 * **`directory_path`**  
   The path to the root directory containing the `*.cs` or `*.vb` source-code files to process.
@@ -106,7 +106,6 @@ CS-VB_PMS_Gen.exe <directory_path> [options]
   If specified, processes all subdirectories recursively.
 * **`-t, --test`**  
   If specified, runs the application in Test Mode (dry-run). It simulates the entire parsing and validation process without writing any changes to disk.
----
 
 ### 🚀 Examples
 
@@ -124,6 +123,8 @@ Run a safe simulation dry-run recursively to validate the execution path without
 ```bash
 CS-VB_PMS_Gen.exe "C:\MySolution" -r --test
 ```
+
+---
 
 ## 🔄 Change Log
 
