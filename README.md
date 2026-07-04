@@ -46,7 +46,7 @@ windows-applications
   
   <h1>CS-VB Public Members Summary Generator<br>(CS-VB_PMS_Gen.exe)</h1>
 
-### Command-line utility to generate and integrate a summary of public API members in your C# or VB.NET source-code files.
+### Command-line utility to generate and integrate a summary of public API members<br>in your C# or VB.NET source-code files.
 
 </div>
 
