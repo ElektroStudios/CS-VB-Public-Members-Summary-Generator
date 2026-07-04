@@ -1,0 +1,82 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ApplicationIcon>App.256.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>CS-VB_PMS_Gen</AssemblyName>
+    <AssemblyTitle>CS-VB Public Members Summary Generator</AssemblyTitle>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <Authors>ElektroStudios</Authors>
+    <Company>ElektroStudios</Company>
+    <Copyright>Copyright © ElektroStudios 2026</Copyright>
+    <Description>Generates a summary of public members for C# and VB.NET source-code files.</Description>
+    <FileVersion>1.0.0</FileVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <OptionInfer>Off</OptionInfer>
+    <OptionStrict>On</OptionStrict>
+    <OutputType>Exe</OutputType>
+    <PackageIcon>App.256.png</PackageIcon>
+    <PackageTags>roslyn-analyzer;syntax-tree-parsing;public-members-summary;source-code-generator;code-analysis;region-directive-manager;vbnet;csharp;dotnet-core;net-framework;multi-targeting;cross-platform;console-utility;console-application;utf-encoding-preservation;windows;linux</PackageTags>
+    <PackAsTool>True</PackAsTool>
+    <Product>$(AssemblyTitle)</Product>
+    <RootNamespace>CS_VB_Public_Members_Summary_Generator</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <Title>CS-VB Public Members Summary Generator</Title>
+    <ToolCommandName>$(TargetName)</ToolCommandName>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Test Files\VB\Class-level access.vb" />
+    <Compile Remove="Test Files\VB\Inner class access.vb" />
+    <Compile Remove="Test Files\VB\Inner Interface access.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="App.256.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\App.256.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="Test Files\VB\Class-level access.vb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Test Files\VB\Inner class access.vb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Test Files\VB\Inner Interface access.vb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="5.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Test Files\C#\Class-level access.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Test Files\C#\Inner class access.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Test Files\C#\Inner Interface access.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if exist &quot;$(TargetDir)\cs&quot;      (rmdir /S /Q &quot;$(TargetDir)\cs&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\de&quot;      (rmdir /S /Q &quot;$(TargetDir)\de&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\es&quot;      (rmdir /S /Q &quot;$(TargetDir)\es&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\fr&quot;      (rmdir /S /Q &quot;$(TargetDir)\fr&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\it&quot;      (rmdir /S /Q &quot;$(TargetDir)\it&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\ja&quot;      (rmdir /S /Q &quot;$(TargetDir)\ja&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\ko&quot;      (rmdir /S /Q &quot;$(TargetDir)\ko&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\pl&quot;      (rmdir /S /Q &quot;$(TargetDir)\pl&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\pt-BR&quot;   (rmdir /S /Q &quot;$(TargetDir)\pt-BR&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\ru&quot;      (rmdir /S /Q &quot;$(TargetDir)\ru&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\tr&quot;      (rmdir /S /Q &quot;$(TargetDir)\tr&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\zh-Hans&quot; (rmdir /S /Q &quot;$(TargetDir)\zh-Hans&quot;)&#xD;&#xA;if exist &quot;$(TargetDir)\zh-Hant&quot; (rmdir /S /Q &quot;$(TargetDir)\zh-Hant&quot;)" />
+  </Target>
+
+</Project>

@@ -1,49 +1,81 @@
 <!-- Common Project Tags:
+api-analysis 
+c#
+c-sharp 
+cli 
+cli-tool 
+code-analysis
+codeanalysis
 command-line 
+command-line-tool 
 console-applications 
+csharp 
+csharp-language 
 desktop-app 
 desktop-application 
 dotnet 
 dotnet-core 
+dotnetcore 
 netcore 
 netframework 
 netframework48 
+public-apis 
+roslyn
+roslyn-analyzer
+source-code-analysis 
+source-files 
+summarizer 
+textfile 
 tool 
 tools 
 vbnet 
+visual-studio 
+visualbasic-language 
+visualbasicdotnet 
 visualstudio 
+vs-code
+vscode
 windows 
 windows-app 
 windows-application 
 windows-applications 
-windows-forms 
-winforms 
  -->
 
-# PROJECT NAME
+<div align="center">
+  <img src="/Images/App.ico" width="80" alt="CS-VB_PMS_Gen Logo">
+  
+  <h1>CS-VB Public Members Summary Generator (CS-VB_PMS_Gen.exe)</h1>
 
-### PROJECT DESCRIPTION
+### Command-line utility to generate and integrate a summary of public API members in your C# or VB.NET source-code files.
+
+</div>
 
 ------------------
 
 ## 👋 Introduction
 
-INTRODUCTION TEXT
+**CS-VB Public Members Summary Generator** is a command-line interface (CLI) tool designed to analyze C# (`*.cs`) and Visual Basic .NET (`*.vb`) source-code files to identify and document their public API structure. 
+
+The application scans a given directory to process supported source-code files, identifying all publicly accessible members and inserting a clean overview inside a designated `#region` directive on top of each file using a safe, atomic file replacement operation.
 
 ## 👌 Features
 
-FEATURES TEXT
+- Identifies and summarizes public constructors, properties, fields, events, methods, operators, delegates, and enumerations.
+- Automatically updates existing summary `#region` directives, or completely removes them if no public members remain in the file.
+- Supports and preserves UTF-8, UTF-16, and UTF-32 file encodings in both Little Endian and Big Endian, with or without BOM.
+- Files are read and rewritten preserving their exact text encoding, supporting UTF-8, UTF-16, and UTF-32 in both Little Endian and Big Endian byte orders, with or without a Byte Order Mark (BOM).
+- Automatically skips empty files, white-space-only files, Visual Studio auto-generated files, and files with unrecognized or unsupported text encodings.
+- Performs strict, paranoid validation checks, comparing line counts and content hashes, to guarantee all code outside the target summary `#region` remains byte-for-byte identical and is not modified or lost by mistake.
+- Updates your source-code files safely by writing changes to a temporary file first, using an atomic replacement with a temporary `.bak` file to ensure data integrity.
+- Supports optional recursive scanning (`-r` or `--recurse` flags).
+- Provides a safe dry-run environment (`-t` or`--test` flags) to simulate changes without modifying your actual files.
+- Uses [Natural sort order](https://en.wikipedia.org/wiki/Natural_sort_order) to process files, making the program execution sequence predictable and easy to follow.
 
 ## 🖼️ Screenshots
 
-![screenshot](/Images/screenshot.png)
+![screenshot1](/Images/screenshot1.png)
 
-## 🎦 Videos
-
-<!-- Download a recorded video by clicking [here](/Video/video.mp4) -->
-
-<!-- See a recorded video by clicking on the following button:
-[![PROJECT_NAME DEMO VIDEO](Images/demo_video.jpg)](https://www.youtube.com/watch?v=XXXXXXXXX)  -->
+![screenshot2](/Images/screenshot2.png)
 
 ## 📝 Requirements
 
@@ -51,17 +83,47 @@ FEATURES TEXT
 
 ## 🤖 Getting Started
 
-Download the latest compilation by clicking [here](https://github.com/ElektroStudios/PROJECT_NAME/releases/latest).
+Download the latest release by clicking [here](https://github.com/ElektroStudios/CS-VB-Public-Members-Summary-Generator/releases/latest) and start using it!.
+
+## ⚙️ Usage
+
+```bash
+CS-VB_PMS_Gen.exe <directory_path> [options]
+```
+
+### Arguments
+
+* **`directory_path`**  
+  The path to the root directory containing the `*.cs` or `*.vb` source-code files to process.
+
+### Options
+
+* **`-r, --recursive`**  
+  If specified, processes all subdirectories recursively.
+* **`-t, --test`**  
+  If specified, runs the application in Test Mode (dry-run). It simulates the entire parsing and validation process without writing any changes to disk.
+---
+
+### 🚀 Examples
+
+Generate and insert public member summaries only for files in the specified root directory:
+```bash
+CS-VB_PMS_Gen.exe "C:\MySolution"
+```
+
+Recursively update all source files across all subdirectories:
+```bash
+CS-VB_PMS_Gen.exe "C:\MySolution" -r
+```
+
+Run a safe simulation dry-run recursively to validate the execution path without modifying code:
+```bash
+CS-VB_PMS_Gen.exe "C:\MySolution" -r --test
+```
 
 ## 🔄 Change Log
 
 Explore the complete list of changes, bug fixes, and improvements across different releases by clicking [here](/Docs/CHANGELOG.md).
-
-## 🏆 Credits
-
-This work relies on the following resources: 
-
- - [.NET Framework](https://dotnet.microsoft.com/en-us/download/dotnet-framework)
 
 ## ⚠️ Disclaimer:
 
@@ -71,7 +133,7 @@ This Work has no affiliation, approval or endorsement by the author(s) of the th
 
 ## 💪 Contributing
 
-Your contribution is highly appreciated!. If you have any ideas, suggestions, or encounter issues, feel free to open an issue by clicking [here](https://github.com/ElektroStudios/PROJECT_NAME/issues/new/choose). 
+Your contribution is highly appreciated!. If you have any ideas, suggestions, or encounter issues, feel free to open an issue by clicking [here](https://github.com/ElektroStudios/CS-VB-Public-Members-Summary-Generator/issues/new/choose). 
 
 Your input helps make this Work better for everyone. Thank you for your support! 🚀
 
