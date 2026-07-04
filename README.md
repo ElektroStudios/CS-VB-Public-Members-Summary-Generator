@@ -44,7 +44,8 @@ windows-applications
 <div align="center">
   <img src="/Images/App.ico" width="150" alt="CS-VB_PMS_Gen Logo">
   
-  <h1>CS-VB Public Members Summary Generator (CS-VB_PMS_Gen.exe)</h1>
+  <h1>CS-VB Public Members Summary Generator</h1>
+  <h1>(CS-VB_PMS_Gen.exe)</h1>
 
 ### Command-line utility to generate and integrate a summary of public API members in your C# or VB.NET source-code files.
 
