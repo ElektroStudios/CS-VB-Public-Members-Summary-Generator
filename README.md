@@ -163,7 +163,7 @@ CS-VB_PMS_Gen.exe <directory_path> [options]
 | **<code>&#8209;r</code>**,&nbsp;**<code>&#8209;&#8209;recursive</code>** | Recursively process source-code files in all subdirectories. |
 | **<code>&#8209;t</code>**,&nbsp;**<code>&#8209;&#8209;test</code>** | Runs the application in Test Mode (dry-run), simulating the entire process without modifying actual files. |
 
-### 🚀 Examples
+### 👌 Examples
 
 Generate and insert public member summaries only for files in the specified root directory:
 ```bash
@@ -214,6 +214,7 @@ This work is distributed for educational purposes and without any profit motive.
 This work relies on the following technologies, libraries or resources: 
 
  - [.NET Framework](https://dotnet.microsoft.com/en-us/download/dotnet-framework)
+ - [.NET Core](https://dotnet.microsoft.com/en-us/download/dotnet-core)
 
 ## ⚠️ Disclaimer
 
