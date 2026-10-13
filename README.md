@@ -110,7 +110,6 @@ This utility was developed to solve that exact friction point by bringing high-l
 
 - Identifies and summarizes public constructors, properties, fields, events, methods, operators, delegates, and enumerations.
 - Automatically updates existing summary `#region` directives, or completely removes them if no public members remain in the file.
-- Supports and preserves UTF-8, UTF-16, and UTF-32 file encodings in both Little Endian and Big Endian, with or without BOM.
 - Files are read and rewritten preserving their exact text encoding, supporting UTF-8, UTF-16, and UTF-32 in both Little Endian and Big Endian byte orders, with or without a Byte Order Mark (BOM).
 - Automatically skips empty files, white-space-only files, Visual Studio auto-generated files, and files with unrecognized or unsupported text encodings.
 - Performs strict, paranoid validation checks, comparing line counts and content hashes, to guarantee all code outside the target summary `#region` remains byte-for-byte identical and is not modified or lost by mistake.
