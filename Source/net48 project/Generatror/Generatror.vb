@@ -160,7 +160,8 @@ Friend Module Generator
     ''' </param>
     ''' 
     ''' <param name="refPublicMembersCount">
-    ''' When this method returns, contains the total count of publicly accessible members detected in the source-code.
+    ''' When this method returns, contains the total count of publicly accessible members detected in the source-code, 
+    ''' or zero if the source code is blank or no accessible public members are found.
     ''' </param>
     ''' 
     ''' <returns>
@@ -174,6 +175,9 @@ Friend Module Generator
     <DebuggerStepperBoundary>
     Public Function GenerateSummaryRegion(sourceCode As String, language As SourceLanguage,
                                     ByRef refPublicMembersCount As Integer) As String
+
+        ' Reset the output value first, so it is always valid whichever way the method returns.
+        refPublicMembersCount = 0
 
         If String.IsNullOrWhiteSpace(sourceCode) Then
             Return String.Empty
@@ -434,7 +438,7 @@ Friend Module Generator
         Dim language As SourceLanguage = SourceLanguage.CSharp
         Dim root As SyntaxNode = syntaxTree.GetRoot()
 
-        ' 1. Process Constructors (🏗️)
+        ' (C#) | 1. Process Constructors (🏗️)
         Dim ctorStatements As IEnumerable(Of CsSyntax.ConstructorDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.ConstructorDeclarationSyntax)()
 
@@ -451,7 +455,26 @@ Friend Module Generator
             End If
         Next ctorStatement
 
-        ' 2. Process Properties (🔧)
+        ' (C#) | 1b. Process Primary Constructors of records, classes and structs (🏗️)
+        ' Example: public record R(int A, string B);  public class C(int a);
+        Dim primaryCtorTypes As IEnumerable(Of CsSyntax.TypeDeclarationSyntax) =
+            root.DescendantNodes().OfType(Of CsSyntax.TypeDeclarationSyntax)()
+
+        For Each primaryCtorType As CsSyntax.TypeDeclarationSyntax In primaryCtorTypes
+
+            If primaryCtorType.ParameterList IsNot Nothing AndAlso
+               Generator.IsCsTypeAccessible(primaryCtorType.Modifiers) AndAlso
+               Generator.IsParentChainAccessible(primaryCtorType, language) Then
+
+                ' The parameter list is a child of the type, so the containing type name includes the name of the type.
+                Dim containingTypeName As String = Generator.GetContainingTypeName(primaryCtorType.ParameterList, language)
+                Dim params As String = Generator.GetParameterTypes(primaryCtorType.ParameterList, language)
+
+                refCtors.Add($"// {containingTypeName}({params})")
+            End If
+        Next primaryCtorType
+
+        ' (C#) | 2. Process Properties (🔧)
         Dim propertyStatements As IEnumerable(Of CsSyntax.PropertyDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.PropertyDeclarationSyntax)()
 
@@ -476,7 +499,53 @@ Friend Module Generator
             End If
         Next propStatement
 
-        ' 3. Process Fields (🏷️)
+        ' (C#) | 2b. Process the properties generated from the positional parameters of records (🔧)
+        Dim recordStatements As IEnumerable(Of CsSyntax.RecordDeclarationSyntax) =
+            root.DescendantNodes().OfType(Of CsSyntax.RecordDeclarationSyntax)()
+
+        For Each recordStatement As CsSyntax.RecordDeclarationSyntax In recordStatements
+
+            If recordStatement.ParameterList IsNot Nothing AndAlso
+               Generator.IsCsTypeAccessible(recordStatement.Modifiers) AndAlso
+               Generator.IsParentChainAccessible(recordStatement, language) Then
+
+                ' The parameter list is a child of the record, so the containing type name includes the record name.
+                Dim containingTypeName As String = Generator.GetContainingTypeName(recordStatement.ParameterList, language)
+
+                For Each recordParameter As CsSyntax.ParameterSyntax In recordStatement.ParameterList.Parameters
+                    Dim propType As String =
+                        If(recordParameter.Type IsNot Nothing,
+                           recordParameter.Type.ToString().Trim(),
+                           Generator.ObjectTypeNameCS)
+
+                    refProps.Add($"// {propType} {containingTypeName}.{recordParameter.Identifier.Text}")
+                Next recordParameter
+            End If
+        Next recordStatement
+
+        ' (C#) | 2c. Process Indexers (🔧)
+        Dim indexerStatements As IEnumerable(Of CsSyntax.IndexerDeclarationSyntax) =
+            root.DescendantNodes().OfType(Of CsSyntax.IndexerDeclarationSyntax)()
+
+        For Each indexerStatement As CsSyntax.IndexerDeclarationSyntax In indexerStatements
+
+            ' Members of an interface are intrinsically public in C#.
+            Dim isInterfaceMember As Boolean =
+                (indexerStatement.Parent IsNot Nothing AndAlso indexerStatement.Parent.IsKind(Cs.SyntaxKind.InterfaceDeclaration))
+
+            If (isInterfaceMember OrElse Generator.IsPubliclyAccessible(indexerStatement.Modifiers, language)) AndAlso
+               Generator.IsParentChainAccessible(indexerStatement, language) AndAlso
+           Not Generator.HasEditorBrowsableNeverAttribute(indexerStatement, language) Then
+
+                Dim indexerType As String = indexerStatement.Type.ToString().Trim()
+                Dim params As String = Generator.GetParameterTypes(indexerStatement.ParameterList, language)
+                Dim containingTypeName As String = Generator.GetContainingTypeName(indexerStatement, language)
+
+                refProps.Add($"// {indexerType} {containingTypeName}.this[{params}]")
+            End If
+        Next indexerStatement
+
+        ' (C#) | 3. Process Fields (🏷️)
         Dim fieldStatements As IEnumerable(Of CsSyntax.FieldDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.FieldDeclarationSyntax)()
 
@@ -502,7 +571,7 @@ Friend Module Generator
             End If
         Next fieldDeclaration
 
-        ' 4. Process Events (⚡)
+        ' (C#) | 4. Process Events (⚡)
         ' Process standard events (event EventHandler MyEvent;)
         Dim eventFieldStatements As IEnumerable(Of CsSyntax.EventFieldDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.EventFieldDeclarationSyntax)()
@@ -553,7 +622,7 @@ Friend Module Generator
             End If
         Next eventStmt
 
-        ' 5. Process Methods (🧠)
+        ' (C#) | 5. Process Methods (🧠)
         Dim methodStatements As IEnumerable(Of CsSyntax.MethodDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.MethodDeclarationSyntax)()
 
@@ -581,7 +650,7 @@ Friend Module Generator
             End If
         Next methodStatement
 
-        ' 6. Process Operators (📐)
+        ' (C#) | 6. Process Operators (📐)
         ' Process standard operators (+, -, etc.)
         Dim operatorStatements As IEnumerable(Of CsSyntax.OperatorDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.OperatorDeclarationSyntax)()
@@ -635,7 +704,7 @@ Friend Module Generator
             End If
         Next convOpStmt
 
-        ' 7. Process Delegates (📜)
+        ' (C#) | 7. Process Delegates (📜)
         Dim delegateStatements As IEnumerable(Of CsSyntax.DelegateDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.DelegateDeclarationSyntax)()
 
@@ -659,7 +728,7 @@ Friend Module Generator
             End If
         Next delegateStatement
 
-        ' 8. Process Enums (🔢)
+        ' (C#) | 8. Process Enums (🔢)
         Dim enumStatements As IEnumerable(Of CsSyntax.EnumDeclarationSyntax) =
             root.DescendantNodes().OfType(Of CsSyntax.EnumDeclarationSyntax)()
 
@@ -801,14 +870,20 @@ Friend Module Generator
 
         Dim root As SyntaxNode = syntaxTree.GetRoot()
 
-        ' 1. Process Constructors (🏗️)
+        ' (VB) | 1. Process Constructors (🏗️)
         Dim subNewStatements As IEnumerable(Of VbSyntax.SubNewStatementSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.SubNewStatementSyntax)()
 
         For Each subNewStatement As VbSyntax.SubNewStatementSyntax In subNewStatements
-            If Generator.IsPubliclyAccessible(subNewStatement.Modifiers, language) AndAlso
+
+            ' A "Shared Sub New" is a static constructor: it can't be called, so it isn't part of the public API.
+            Dim isStaticConstructor As Boolean =
+                subNewStatement.Modifiers.Any(Function(token As SyntaxToken) token.IsKind(Vb.SyntaxKind.SharedKeyword))
+
+            If Not isStaticConstructor AndAlso
+               Generator.IsPubliclyAccessible(subNewStatement.Modifiers, language) AndAlso
                Generator.IsParentChainAccessible(subNewStatement, language) AndAlso
-           Not Generator.HasEditorBrowsableNeverAttribute(subNewStatement, language) Then
+               Not Generator.HasEditorBrowsableNeverAttribute(subNewStatement, language) Then
 
                 Dim params As String = Generator.GetParameterTypes(subNewStatement.ParameterList, language)
 
@@ -817,7 +892,7 @@ Friend Module Generator
             End If
         Next subNewStatement
 
-        ' 2. Process Properties (🔧)
+        ' (VB) | 2. Process Properties (🔧)
         Dim propertyStatements As IEnumerable(Of VbSyntax.PropertyStatementSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.PropertyStatementSyntax)()
 
@@ -836,7 +911,7 @@ Friend Module Generator
             End If
         Next propStatement
 
-        ' 3. Process Fields (🏷️)
+        ' (VB) | 3. Process Fields (🏷️)
         Dim fieldStatements As IEnumerable(Of VbSyntax.FieldDeclarationSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.FieldDeclarationSyntax)()
 
@@ -883,14 +958,14 @@ Friend Module Generator
 
                     For Each name As VbSyntax.ModifiedIdentifierSyntax In declarator.Names
                         Dim identifierName As String = name.Identifier.Text
-                        Dim fieldSummary As String = $"' {containingTypeName}.{identifierName.Trim(Generator.VbNameTrimSpecialChars)} As {fieldType}"
+                        Dim fieldSummary As String = $"' {containingTypeName}.{identifierName.Trim(Generator.VbNameTrimSpecialChars)} As {fieldType}{Generator.GetModifiedIdentifierTypeSuffix(name)}"
                         refFields.Add(fieldSummary)
                     Next
                 Next
             End If
         Next fieldDeclaration
 
-        ' 4. Process Events (⚡)
+        ' (VB) | 4. Process Events (⚡)
         Dim eventStatements As IEnumerable(Of VbSyntax.EventStatementSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.EventStatementSyntax)()
 
@@ -919,7 +994,9 @@ Friend Module Generator
                     eventSummary = $"' {containingTypeName}.{eventName.Trim(Generator.VbNameTrimSpecialChars)}({params})"
 
                 Else
-                    Throw New InvalidOperationException($"Unsupported event declaration syntax detected: {eventStatement}")
+                    ' Event without "As" clause nor parameter list, which is valid and equivalent to an event without parameters:
+                    ' Public Event X
+                    eventSummary = $"' {containingTypeName}.{eventName.Trim(Generator.VbNameTrimSpecialChars)}()"
 
                 End If
 
@@ -927,7 +1004,7 @@ Friend Module Generator
             End If
         Next eventStatement
 
-        ' 5. Process Methods (🧠)
+        ' (VB) | 5. Process Methods (🧠)
         Dim methodStatements As IEnumerable(Of VbSyntax.MethodStatementSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.MethodStatementSyntax)()
 
@@ -956,7 +1033,34 @@ Friend Module Generator
             End If
         Next methodStatement
 
-        ' 6. Process Operators (📐)
+        ' (VB) | 5b. Process 'Declare' statements (P/Invoke methods) (🧠)
+        Dim declareStatements As IEnumerable(Of VbSyntax.DeclareStatementSyntax) =
+            root.DescendantNodes().OfType(Of VbSyntax.DeclareStatementSyntax)()
+
+        For Each declareStatement As VbSyntax.DeclareStatementSyntax In declareStatements
+
+            If Generator.IsPubliclyAccessible(declareStatement.Modifiers, language) AndAlso
+               Generator.IsParentChainAccessible(declareStatement, language) AndAlso
+           Not Generator.HasEditorBrowsableNeverAttribute(declareStatement, language) Then
+
+                Dim declareName As String = declareStatement.Identifier.Text.Trim(Generator.VbNameTrimSpecialChars)
+                Dim params As String = Generator.GetParameterTypes(declareStatement.ParameterList, language)
+                Dim containingTypeName As String = Generator.GetContainingTypeName(declareStatement, language)
+
+                If declareStatement.SubOrFunctionKeyword.IsKind(Vb.SyntaxKind.SubKeyword) Then
+                    refMethods.Add($"' {containingTypeName}.{declareName}({params})")
+                Else
+                    Dim returnType As String =
+                        If((declareStatement.AsClause IsNot Nothing) AndAlso (declareStatement.AsClause.Type IsNot Nothing),
+                            declareStatement.AsClause.Type.ToString().Trim(),
+                           Generator.ObjectTypeNameVB)
+
+                    refMethods.Add($"' {containingTypeName}.{declareName}({params}) As {returnType}")
+                End If
+            End If
+        Next declareStatement
+
+        ' (VB) | 6. Process Operators (📐)
         Dim operatorStatements As IEnumerable(Of VbSyntax.OperatorStatementSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.OperatorStatementSyntax)()
 
@@ -997,12 +1101,13 @@ Friend Module Generator
             End If
         Next operatorStatement
 
-        ' 7. Process Delegates (📜)
+        ' (VB) | 7. Process Delegates (📜)
         Dim delegateStatements As IEnumerable(Of VbSyntax.DelegateStatementSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.DelegateStatementSyntax)()
 
         For Each delegateStatement As VbSyntax.DelegateStatementSyntax In delegateStatements
-            If Generator.IsPubliclyAccessible(delegateStatement.Modifiers, language) AndAlso
+
+            If Generator.IsVbTypeAccessible(delegateStatement, delegateStatement.Modifiers) AndAlso
                Generator.IsParentChainAccessible(delegateStatement, language) AndAlso
            Not Generator.HasEditorBrowsableNeverAttribute(delegateStatement, language) Then
 
@@ -1024,17 +1129,16 @@ Friend Module Generator
                 End If
 
             End If
-
         Next delegateStatement
 
-        ' 8. Process Enums (🔢)
+        ' (VB) | 8. Process Enums (🔢)
         Dim enumBlocks As IEnumerable(Of VbSyntax.EnumBlockSyntax) =
             root.DescendantNodes().OfType(Of VbSyntax.EnumBlockSyntax)()
 
         For Each enumBlock As VbSyntax.EnumBlockSyntax In enumBlocks
             Dim enumStatement As VbSyntax.EnumStatementSyntax = enumBlock.EnumStatement
 
-            If Generator.IsPubliclyAccessible(enumStatement.Modifiers, language) AndAlso
+            If Generator.IsVbTypeAccessible(enumBlock, enumStatement.Modifiers) AndAlso
                Generator.IsParentChainAccessible(enumStatement, language) AndAlso
            Not Generator.HasEditorBrowsableNeverAttribute(enumStatement, language) Then
 
@@ -1130,19 +1234,26 @@ Friend Module Generator
 
                     If TypeOf current Is CsSyntax.ClassDeclarationSyntax Then
                         Dim classDeclaration As CsSyntax.ClassDeclarationSyntax = CType(current, CsSyntax.ClassDeclarationSyntax)
-                        If Not Generator.IsPubliclyAccessible(classDeclaration.Modifiers, SourceLanguage.CSharp) Then
+                        If Not Generator.IsCsTypeAccessible(classDeclaration.Modifiers) Then
                             Return False
                         End If
 
                     ElseIf TypeOf current Is CsSyntax.StructDeclarationSyntax Then
                         Dim structureDeclaration As CsSyntax.StructDeclarationSyntax = CType(current, CsSyntax.StructDeclarationSyntax)
-                        If Not Generator.IsPubliclyAccessible(structureDeclaration.Modifiers, SourceLanguage.CSharp) Then
+                        If Not Generator.IsCsTypeAccessible(structureDeclaration.Modifiers) Then
                             Return False
                         End If
 
                     ElseIf TypeOf current Is CsSyntax.InterfaceDeclarationSyntax Then
                         Dim interfaceDeclaration As CsSyntax.InterfaceDeclarationSyntax = CType(current, CsSyntax.InterfaceDeclarationSyntax)
-                        If Not Generator.IsPubliclyAccessible(interfaceDeclaration.Modifiers, SourceLanguage.CSharp) Then
+                        If Not Generator.IsCsTypeAccessible(interfaceDeclaration.Modifiers) Then
+                            Return False
+                        End If
+
+                    ElseIf TypeOf current Is CsSyntax.RecordDeclarationSyntax Then
+                        ' Covers both "record" and "record struct" declarations.
+                        Dim recordDeclaration As CsSyntax.RecordDeclarationSyntax = CType(current, CsSyntax.RecordDeclarationSyntax)
+                        If Not Generator.IsCsTypeAccessible(recordDeclaration.Modifiers) Then
                             Return False
                         End If
 
@@ -1156,25 +1267,25 @@ Friend Module Generator
 
                     If TypeOf current Is VbSyntax.ClassBlockSyntax Then
                         Dim classBlock As VbSyntax.ClassBlockSyntax = CType(current, VbSyntax.ClassBlockSyntax)
-                        If Not Generator.IsPubliclyAccessible(classBlock.ClassStatement.Modifiers, SourceLanguage.VisualBasic) Then
+                        If Not Generator.IsVbTypeAccessible(classBlock, classBlock.ClassStatement.Modifiers) Then
                             Return False
                         End If
 
                     ElseIf TypeOf current Is VbSyntax.StructureBlockSyntax Then
                         Dim structBlock As VbSyntax.StructureBlockSyntax = CType(current, VbSyntax.StructureBlockSyntax)
-                        If Not Generator.IsPubliclyAccessible(structBlock.StructureStatement.Modifiers, SourceLanguage.VisualBasic) Then
+                        If Not Generator.IsVbTypeAccessible(structBlock, structBlock.StructureStatement.Modifiers) Then
                             Return False
                         End If
 
                     ElseIf TypeOf current Is VbSyntax.InterfaceBlockSyntax Then
                         Dim interfaceBlock As VbSyntax.InterfaceBlockSyntax = CType(current, VbSyntax.InterfaceBlockSyntax)
-                        If Not Generator.IsPubliclyAccessible(interfaceBlock.InterfaceStatement.Modifiers, SourceLanguage.VisualBasic) Then
+                        If Not Generator.IsVbTypeAccessible(interfaceBlock, interfaceBlock.InterfaceStatement.Modifiers) Then
                             Return False
                         End If
 
                     ElseIf TypeOf current Is VbSyntax.ModuleBlockSyntax Then
                         Dim moduleBlock As VbSyntax.ModuleBlockSyntax = CType(current, VbSyntax.ModuleBlockSyntax)
-                        If Not Generator.IsPubliclyAccessible(moduleBlock.ModuleStatement.Modifiers, SourceLanguage.VisualBasic) Then
+                        If Not Generator.IsVbTypeAccessible(moduleBlock, moduleBlock.ModuleStatement.Modifiers) Then
                             Return False
                         End If
                     End If
@@ -1188,6 +1299,103 @@ Friend Module Generator
         End Select
 
         Return True
+    End Function
+
+    ''' <summary>
+    ''' Determines whether a C# type declaration (class, struct, interface or record) is publicly accessible.
+    ''' <para></para>
+    ''' The exception are partial types without an access modifier, which are considered accessible 
+    ''' because the access modifier may be specified in another part of the type, declared in another file.
+    ''' </summary>
+    ''' 
+    ''' <param name="modifiers">
+    ''' The list of syntax tokens representing the modifiers of the type declaration.
+    ''' </param>
+    ''' 
+    ''' <returns>
+    ''' <see langword="True"/> if the type is considered publicly accessible; 
+    ''' otherwise, <see langword="False"/>.
+    ''' </returns>
+    <DebuggerStepThrough>
+    Private Function IsCsTypeAccessible(modifiers As SyntaxTokenList) As Boolean
+
+        Dim hasExplicitAccessModifier As Boolean =
+            modifiers.Any(Function(token As SyntaxToken)
+                              Return token.IsKind(Cs.SyntaxKind.PublicKeyword) OrElse
+                                     token.IsKind(Cs.SyntaxKind.PrivateKeyword) OrElse
+                                     token.IsKind(Cs.SyntaxKind.ProtectedKeyword) OrElse
+                                     token.IsKind(Cs.SyntaxKind.InternalKeyword)
+                          End Function)
+
+        ' A partial type does not need to specify its access modifier in every one of its parts: 
+        ' it is enough that one part specifies it, and the others can omit it.
+        ' The real accessibility can't be known from a single file, so the type gets the benefit of the doubt.
+        ' Otherwise, the members of a public partial type would be ignored, and an existing summary region would be removed.
+        If (Not hasExplicitAccessModifier) AndAlso
+           modifiers.Any(Function(token As SyntaxToken) token.IsKind(Cs.SyntaxKind.PartialKeyword)) Then
+
+            Return True
+        End If
+
+        Return Generator.IsPubliclyAccessible(modifiers, SourceLanguage.CSharp)
+
+    End Function
+
+    ''' <summary>
+    ''' Determines whether a Visual Basic type declaration (class, structure, module, interface, enumeration or delegate)
+    ''' is publicly accessible, taking into account its default accessibility when it has no
+    ''' access modifier: Friend for types declared in a namespace or at file level,
+    ''' and Public for types nested in another type.
+    ''' <para></para>
+    ''' The exception are partial types without an access modifier, which are considered accessible 
+    ''' because the access modifier may be specified in another part of the type, declared in another file.
+    ''' </summary>
+    ''' 
+    ''' <param name="typeNode">
+    ''' The syntax node of the type declaration to evaluate: the declaration block of a class, structure, module, interface or enumeration, 
+    ''' or the declaration statement of a delegate.
+    ''' <para></para>
+    ''' Its parent node is used to determine the default accessibility when the type has no access modifier.
+    ''' </param>
+    ''' 
+    ''' <param name="modifiers">
+    ''' The list of syntax tokens representing the modifiers of the type declaration statement.
+    ''' </param>
+    ''' 
+    ''' <returns>
+    ''' <see langword="True"/> if the type is considered publicly accessible; 
+    ''' otherwise, <see langword="False"/>.
+    ''' </returns>
+    <DebuggerStepThrough>
+    Private Function IsVbTypeAccessible(typeNode As SyntaxNode, modifiers As SyntaxTokenList) As Boolean
+
+        Dim hasExplicitAccessModifier As Boolean =
+            modifiers.Any(Function(token As SyntaxToken)
+                              Return token.IsKind(Vb.SyntaxKind.PublicKeyword) OrElse
+                                     token.IsKind(Vb.SyntaxKind.PrivateKeyword) OrElse
+                                     token.IsKind(Vb.SyntaxKind.ProtectedKeyword) OrElse
+                                     token.IsKind(Vb.SyntaxKind.FriendKeyword)
+                          End Function)
+
+        If Not hasExplicitAccessModifier Then
+
+            ' A partial type does not need to specify its access modifier in every one of its parts: 
+            ' it is enough that one part specifies it, and the others can omit it.
+            ' The real accessibility can't be known from a single file, so the type gets the benefit of the doubt.
+            ' Otherwise, the members of a public partial type would be ignored, and an existing summary region would be removed.
+            If modifiers.Any(Function(token As SyntaxToken) token.IsKind(Vb.SyntaxKind.PartialKeyword)) Then
+                Return True
+            End If
+
+            Dim parentNode As SyntaxNode = typeNode.Parent
+            Return TypeOf parentNode Is VbSyntax.ClassBlockSyntax OrElse
+                   TypeOf parentNode Is VbSyntax.StructureBlockSyntax OrElse
+                   TypeOf parentNode Is VbSyntax.ModuleBlockSyntax OrElse
+                   TypeOf parentNode Is VbSyntax.InterfaceBlockSyntax
+        End If
+
+        Return Generator.IsPubliclyAccessible(modifiers, SourceLanguage.VisualBasic)
+
     End Function
 
     ''' <summary>
@@ -1269,6 +1477,21 @@ Friend Module Generator
                 ElseIf TypeOf node Is VbSyntax.FieldDeclarationSyntax Then
                     attributeLists = DirectCast(node, VbSyntax.FieldDeclarationSyntax).AttributeLists
 
+                ElseIf TypeOf node Is VbSyntax.EventStatementSyntax Then
+                    attributeLists = DirectCast(node, VbSyntax.EventStatementSyntax).AttributeLists
+
+                ElseIf TypeOf node Is VbSyntax.OperatorStatementSyntax Then
+                    attributeLists = DirectCast(node, VbSyntax.OperatorStatementSyntax).AttributeLists
+
+                ElseIf TypeOf node Is VbSyntax.DelegateStatementSyntax Then
+                    attributeLists = DirectCast(node, VbSyntax.DelegateStatementSyntax).AttributeLists
+
+                ElseIf TypeOf node Is VbSyntax.EnumStatementSyntax Then
+                    attributeLists = DirectCast(node, VbSyntax.EnumStatementSyntax).AttributeLists
+
+                ElseIf TypeOf node Is VbSyntax.DeclareStatementSyntax Then
+                    attributeLists = DirectCast(node, VbSyntax.DeclareStatementSyntax).AttributeLists
+
                 Else
                     Return False
                 End If
@@ -1331,7 +1554,8 @@ Friend Module Generator
     ''' 
     ''' <returns>
     ''' Returns a string representing the hierarchy of containing types for the given syntax node, 
-    ''' or an empty string if the node is an <see cref="System.Enum"/> declared at the namespace level without a containing type.
+    ''' or an empty string if the node is an <see cref="System.Enum"/> 
+    ''' or a <see cref="System.Delegate"/> declared at file or namespace level without a containing type.
     ''' </returns>
     ''' 
     ''' <exception cref="ArgumentNullException">
@@ -1366,6 +1590,10 @@ Friend Module Generator
 
                     ElseIf TypeOf current Is CsSyntax.InterfaceDeclarationSyntax Then
                         name = DirectCast(current, CsSyntax.InterfaceDeclarationSyntax).Identifier.Text
+
+                    ElseIf TypeOf current Is CsSyntax.RecordDeclarationSyntax Then
+                        ' Covers both "record" and "record struct" declarations.
+                        name = DirectCast(current, CsSyntax.RecordDeclarationSyntax).Identifier.Text
 
                     End If
 
@@ -1404,8 +1632,9 @@ Friend Module Generator
                 End While
 
                 If typeNames.Count = 0 Then
-                    If TypeOf node Is VbSyntax.EnumStatementSyntax Then
-                        ' Because a enum can be declared at namespace level without a containing type,
+                    If TypeOf node Is VbSyntax.EnumStatementSyntax OrElse
+                       TypeOf node Is VbSyntax.DelegateStatementSyntax Then
+                        ' Because an enum or a delegate can be declared at file or namespace level without a containing type,
                         ' we return an empty string to indicate no containing type.
                         Return String.Empty
                     End If
@@ -1419,6 +1648,53 @@ Friend Module Generator
         End Select
 
         Return String.Join(".", typeNames)
+    End Function
+
+    ''' <summary>
+    ''' Gets the type suffix that a Visual Basic identifier carries on its own name instead of on its <c>As</c> clause: 
+    ''' the nullable modifier and the array rank specifiers.
+    ''' <para></para>
+    ''' For example, <c>Names() As String</c> is an array of <see cref="String"/>, 
+    ''' <c>Arr(5) As Integer</c> is an array of <see cref="Integer"/>, and <c>Matrix(,) As Integer</c> is a two-dimensional array.
+    ''' </summary>
+    ''' 
+    ''' <param name="identifier">
+    ''' The modified identifier of a field or parameter declaration.
+    ''' </param>
+    ''' 
+    ''' <returns>
+    ''' The suffix to append to the type name, such as "()", "(,)", "?" or "()()"; 
+    ''' or an empty string if the identifier has no nullable modifier nor array rank specifiers.
+    ''' </returns>
+    <DebuggerStepThrough>
+    Private Function GetModifiedIdentifierTypeSuffix(identifier As VbSyntax.ModifiedIdentifierSyntax) As String
+
+        If identifier Is Nothing Then
+            Return String.Empty
+        End If
+
+        Dim suffix As New System.Text.StringBuilder()
+
+        If identifier.Nullable.IsKind(Vb.SyntaxKind.QuestionToken) Then
+            suffix.Append("?"c)
+        End If
+
+        ' Explicit bounds, like "Arr(5)" or "Matrix(2, 3)". The number of dimensions is the number of bounds.
+        If identifier.ArrayBounds IsNot Nothing Then
+            suffix.Append("("c)
+            suffix.Append(New String(","c, Math.Max(identifier.ArrayBounds.Arguments.Count - 1, 0)))
+            suffix.Append(")"c)
+        End If
+
+        ' Rank specifiers, like "Names()" or "Jagged()()".
+        For Each rankSpecifier As VbSyntax.ArrayRankSpecifierSyntax In identifier.ArrayRankSpecifiers
+            suffix.Append("("c)
+            suffix.Append(New String(","c, rankSpecifier.CommaTokens.Count))
+            suffix.Append(")"c)
+        Next rankSpecifier
+
+        Return suffix.ToString()
+
     End Function
 
     ''' <summary>
@@ -1449,8 +1725,9 @@ Friend Module Generator
         Select Case language
 
             Case SourceLanguage.CSharp
-                Dim parameterList As CsSyntax.ParameterListSyntax =
-                    DirectCast(parameterListNode, CsSyntax.ParameterListSyntax)
+                ' Base type of both ParameterListSyntax "(...)" and BracketedParameterListSyntax "[...]" (indexers).
+                Dim parameterList As CsSyntax.BaseParameterListSyntax =
+                    DirectCast(parameterListNode, CsSyntax.BaseParameterListSyntax)
 
                 If parameterList Is Nothing OrElse
                    parameterList.Parameters.Count = 0 Then
@@ -1475,9 +1752,15 @@ Friend Module Generator
                 End If
 
                 For Each param As VbSyntax.ParameterSyntax In parameterList.Parameters
-                    types.Add(If(param.AsClause IsNot Nothing AndAlso param.AsClause.Type IsNot Nothing,
-                                 param.AsClause.Type.ToString().Trim(),
-                                 Generator.ObjectTypeNameVB))
+                    Dim paramType As String =
+                        If(param.AsClause IsNot Nothing AndAlso param.AsClause.Type IsNot Nothing,
+                           param.AsClause.Type.ToString().Trim(),
+                           Generator.ObjectTypeNameVB)
+
+                    ' Array rank specifiers (and nullable modifier) written on the parameter name, like "e() As Integer".
+                    paramType &= Generator.GetModifiedIdentifierTypeSuffix(param.Identifier)
+
+                    types.Add(paramType)
                 Next param
 
             Case Else
