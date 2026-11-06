@@ -13,6 +13,7 @@
 - When the summary region is removed from a file, the blank lines that were added with it are removed too, restoring the original file.
 - Files containing more than one summary region are now left untouched and counted only as failed.
 - The temporary file is now removed when replacing the original file fails.
+- Source files inside bin/obj subdirectories and more kind of generated files (*.g.cs, *.g.i.cs, *.generated.*) are now skipped.
 
 ### Improvements
 - Visual Basic: `Declare` statements (P/Invoke) are now listed as methods.
