@@ -37,6 +37,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>CS_VB_PMS_Gen.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Test Files\VB\Class-level access.vb" />
     <Compile Remove="Test Files\VB\Inner class access.vb" />
     <Compile Remove="Test Files\VB\Inner Interface access.vb" />
