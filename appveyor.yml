@@ -39,7 +39,7 @@ build:
 
 test_script:
   - >-
-    dotnet test "Source\CS_VB_PMS_Gen.Tests\CS_VB_PMS_Gen.Tests.vbproj" -c Release --no-build /p:TestingPlatformDotnetTestSupport=true
+    dotnet run --project "Source\CS_VB_PMS_Gen.Tests\CS_VB_PMS_Gen.Tests.vbproj" -c Release --no-build
 
 after_build:
   - >-
