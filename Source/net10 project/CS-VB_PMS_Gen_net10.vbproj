@@ -34,6 +34,7 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageId>CS-VB_Public_Members_Summary_Generator</PackageId>
     <Version>1.1.0</Version>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
