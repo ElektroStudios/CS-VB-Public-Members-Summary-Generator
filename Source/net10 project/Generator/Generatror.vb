@@ -79,8 +79,10 @@ Imports VbSyntax = Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports VbExtensions = Microsoft.CodeAnalysis.VisualBasic.VisualBasicExtensions
 Imports VbSyntaxExtensions = Microsoft.CodeAnalysis.VisualBasic.SyntaxExtensions
 
-#End Region
+Imports System
 
+
+#End Region
 ''' <summary>
 ''' Provides functionality to parse # and VB.NET source code and generate a summary of all public members.
 ''' <para></para>
@@ -1319,21 +1321,32 @@ Friend Module Generator
     <DebuggerStepThrough>
     Private Function IsCsTypeAccessible(modifiers As SyntaxTokenList) As Boolean
 
-        Dim hasExplicitAccessModifier As Boolean =
-            modifiers.Any(Function(token As SyntaxToken)
-                              Return token.IsKind(Cs.SyntaxKind.PublicKeyword) OrElse
-                                     token.IsKind(Cs.SyntaxKind.PrivateKeyword) OrElse
-                                     token.IsKind(Cs.SyntaxKind.ProtectedKeyword) OrElse
-                                     token.IsKind(Cs.SyntaxKind.InternalKeyword)
-                          End Function)
+        ' Both flags are collected in a single pass over the modifiers.
+        ' Note: Do not compute them with two separate "modifiers.Any(...)" calls;
+        ' a static analyzer may wrongly assume that the list is empty after the first call returns False,
+        ' and then report the second call as always False.
+        Dim hasExplicitAccessModifier As Boolean = False
+        Dim isPartial As Boolean = False
 
-        ' A partial type does not need to specify its access modifier in every one of its parts: 
+        For Each token As SyntaxToken In modifiers
+            If token.IsKind(Cs.SyntaxKind.PublicKeyword) OrElse
+               token.IsKind(Cs.SyntaxKind.PrivateKeyword) OrElse
+               token.IsKind(Cs.SyntaxKind.ProtectedKeyword) OrElse
+               token.IsKind(Cs.SyntaxKind.InternalKeyword) Then
+
+                hasExplicitAccessModifier = True
+
+            ElseIf token.IsKind(Cs.SyntaxKind.PartialKeyword) Then
+                isPartial = True
+
+            End If
+        Next token
+
+        ' A partial type does not need to specify its access modifier in every one of its parts:
         ' it is enough that one part specifies it, and the others can omit it.
         ' The real accessibility can't be known from a single file, so the type gets the benefit of the doubt.
         ' Otherwise, the members of a public partial type would be ignored, and an existing summary region would be removed.
-        If (Not hasExplicitAccessModifier) AndAlso
-           modifiers.Any(Function(token As SyntaxToken) token.IsKind(Cs.SyntaxKind.PartialKeyword)) Then
-
+        If isPartial AndAlso (Not hasExplicitAccessModifier) Then
             Return True
         End If
 
@@ -1369,21 +1382,34 @@ Friend Module Generator
     <DebuggerStepThrough>
     Private Function IsVbTypeAccessible(typeNode As SyntaxNode, modifiers As SyntaxTokenList) As Boolean
 
-        Dim hasExplicitAccessModifier As Boolean =
-            modifiers.Any(Function(token As SyntaxToken)
-                              Return token.IsKind(Vb.SyntaxKind.PublicKeyword) OrElse
-                                     token.IsKind(Vb.SyntaxKind.PrivateKeyword) OrElse
-                                     token.IsKind(Vb.SyntaxKind.ProtectedKeyword) OrElse
-                                     token.IsKind(Vb.SyntaxKind.FriendKeyword)
-                          End Function)
+        ' Both flags are collected in a single pass over the modifiers.
+        ' Note: Do not compute them with two separate "modifiers.Any(...)" calls;
+        ' a static analyzer may wrongly assume that the list is empty after the first call returns False,
+        ' and then report the second call as always False.
+        Dim hasExplicitAccessModifier As Boolean = False
+        Dim isPartial As Boolean = False
+
+        For Each token As SyntaxToken In modifiers
+            If token.IsKind(Vb.SyntaxKind.PublicKeyword) OrElse
+               token.IsKind(Vb.SyntaxKind.PrivateKeyword) OrElse
+               token.IsKind(Vb.SyntaxKind.ProtectedKeyword) OrElse
+               token.IsKind(Vb.SyntaxKind.FriendKeyword) Then
+
+                hasExplicitAccessModifier = True
+
+            ElseIf token.IsKind(Vb.SyntaxKind.PartialKeyword) Then
+                isPartial = True
+
+            End If
+        Next token
 
         If Not hasExplicitAccessModifier Then
 
-            ' A partial type does not need to specify its access modifier in every one of its parts: 
+            ' A partial type does not need to specify its access modifier in every one of its parts:
             ' it is enough that one part specifies it, and the others can omit it.
             ' The real accessibility can't be known from a single file, so the type gets the benefit of the doubt.
             ' Otherwise, the members of a public partial type would be ignored, and an existing summary region would be removed.
-            If modifiers.Any(Function(token As SyntaxToken) token.IsKind(Vb.SyntaxKind.PartialKeyword)) Then
+            If isPartial Then
                 Return True
             End If
 
