@@ -1,6 +1,4 @@
 ﻿
-#If Not NETCOREAPP Then
-
 #Region " Option Statements "
 
 Option Strict On
@@ -8,6 +6,8 @@ Option Explicit On
 Option Infer Off
 
 #End Region
+
+#If Not NETCOREAPP Then
 
 #Region " Imports "
 

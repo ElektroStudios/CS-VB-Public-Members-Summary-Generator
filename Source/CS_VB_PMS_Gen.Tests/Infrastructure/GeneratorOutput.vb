@@ -180,6 +180,8 @@ Friend NotInheritable Class GeneratorOutput
     ''' <summary>
     ''' Splits the text in sections.
     ''' </summary>
+    '''
+    ''' <exception cref="InvalidOperationException"></exception>
     Private Sub Parse()
 
         Dim lines As String() = Me.Text.Split(ControlChars.Lf).Select(Function(line As String) line.TrimEnd(ControlChars.Cr)).ToArray()
@@ -190,11 +192,11 @@ Friend NotInheritable Class GeneratorOutput
 
             Dim line As String = lines(i)
 
-            If line.Length = 0 OrElse line.StartsWith("#", StringComparison.Ordinal) OrElse line.IndexOf(GeneratorOutput.UnderlineChar) >= 0 Then
+            If line.Length = 0 OrElse line.StartsWith("#", StringComparison.Ordinal) OrElse line.IndexOf(GeneratorOutput.UnderlineChar, StringComparison.Ordinal) >= 0 Then
                 Continue For
             End If
 
-            If i + 1 < lines.Length AndAlso lines(i + 1).IndexOf(GeneratorOutput.UnderlineChar) >= 0 Then
+            If i + 1 < lines.Length AndAlso lines(i + 1).IndexOf(GeneratorOutput.UnderlineChar, StringComparison.Ordinal) >= 0 Then
                 currentSection = line.Substring(line.LastIndexOf(" "c) + 1)
                 Me.FoundSections.Add(currentSection)
                 Me.Sections(currentSection) = New List(Of String)

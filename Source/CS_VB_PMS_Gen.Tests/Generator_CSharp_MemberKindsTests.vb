@@ -687,7 +687,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim output As GeneratorOutput = Run("public enum E { First, Second, Third }")
 
             Assert.Equal(1, output.Count)
-            Assert.DoesNotContain("First", output.Text)
+            Assert.DoesNotContain("First", output.Text, StringComparison.Ordinal)
 
         End Sub
 

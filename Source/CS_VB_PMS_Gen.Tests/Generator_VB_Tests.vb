@@ -29,11 +29,11 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("Target.New()", result)
-            Assert.Contains("PropPublic As String", result)
-            Assert.Contains("MethodPublic()", result)
-            Assert.DoesNotContain("PropFriend", result)
-            Assert.DoesNotContain("MethodProtected", result)
+            Assert.Contains("Target.New()", result, StringComparison.Ordinal)
+            Assert.Contains("PropPublic As String", result, StringComparison.Ordinal)
+            Assert.Contains("MethodPublic()", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("PropFriend", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("MethodProtected", result, StringComparison.Ordinal)
             Assert.Equal(3, count)
         End Sub
 
@@ -46,7 +46,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.DoesNotContain("MethodPublic", result)
+            Assert.DoesNotContain("MethodPublic", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 
@@ -59,7 +59,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("Utils.Helper()", result)
+            Assert.Contains("Utils.Helper()", result, StringComparison.Ordinal)
             Assert.Equal(1, count)
         End Sub
 
@@ -74,9 +74,9 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("Data.FieldA As Integer", result)
-            Assert.DoesNotContain("FieldB", result)
-            Assert.DoesNotContain("FieldC", result)
+            Assert.Contains("Data.FieldA As Integer", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("FieldB", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("FieldC", result, StringComparison.Ordinal)
             Assert.Equal(1, count)
         End Sub
 
@@ -90,8 +90,8 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("MathObj.+(MathObj, MathObj) As MathObj", result)
-            Assert.Contains("MathObj.CType(MathObj) As String", result)
+            Assert.Contains("MathObj.+(MathObj, MathObj) As MathObj", result, StringComparison.Ordinal)
+            Assert.Contains("MathObj.CType(MathObj) As String", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -105,8 +105,8 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("UI.Clicked As EventHandler", result)
-            Assert.Contains("UI.Hovered(Integer, Integer)", result)
+            Assert.Contains("UI.Clicked As EventHandler", result, StringComparison.Ordinal)
+            Assert.Contains("UI.Hovered(Integer, Integer)", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -120,7 +120,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("State As Byte", result)
+            Assert.Contains("State As Byte", result, StringComparison.Ordinal)
             Assert.Equal(1, count)
         End Sub
 
@@ -139,11 +139,11 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
             ' Assert
-            Assert.Contains("DoWork()", result)
-            Assert.DoesNotContain("[DoWork]", result)
+            Assert.Contains("DoWork()", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("[DoWork]", result, StringComparison.Ordinal)
 
-            Assert.Contains("String As String", result)
-            Assert.DoesNotContain("[String]", result)
+            Assert.Contains("String As String", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("[String]", result, StringComparison.Ordinal)
 
             Assert.Equal(2, count)
         End Sub
@@ -161,7 +161,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
             ' Assert
-            Assert.Contains("DefaultEnum As Integer", result)
+            Assert.Contains("DefaultEnum As Integer", result, StringComparison.Ordinal)
             Assert.Equal(1, count)
         End Sub
 
@@ -181,7 +181,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
             ' Assert
-            Assert.DoesNotContain("PublicMethod", result)
+            Assert.DoesNotContain("PublicMethod", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 

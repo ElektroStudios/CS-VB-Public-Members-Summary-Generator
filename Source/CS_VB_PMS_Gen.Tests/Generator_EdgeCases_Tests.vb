@@ -26,7 +26,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.DoesNotContain("HiddenMethod", result)
+            Assert.DoesNotContain("HiddenMethod", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 
@@ -41,7 +41,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.DoesNotContain("HiddenMethod", result)
+            Assert.DoesNotContain("HiddenMethod", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 
@@ -56,7 +56,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.DoesNotContain("GetType", result)
+            Assert.DoesNotContain("GetType", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 

@@ -29,11 +29,11 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("Target()", result)
-            Assert.Contains("PropPublic", result)
-            Assert.Contains("MethodPublic", result)
-            Assert.DoesNotContain("PropInternal", result)
-            Assert.DoesNotContain("MethodProtected", result)
+            Assert.Contains("Target()", result, StringComparison.Ordinal)
+            Assert.Contains("PropPublic", result, StringComparison.Ordinal)
+            Assert.Contains("MethodPublic", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("PropInternal", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("MethodProtected", result, StringComparison.Ordinal)
             Assert.Equal(3, count)
         End Sub
 
@@ -46,7 +46,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.DoesNotContain("MethodPublic", result)
+            Assert.DoesNotContain("MethodPublic", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 
@@ -61,7 +61,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("Outer.Inner.NestedMethod()", result)
+            Assert.Contains("Outer.Inner.NestedMethod()", result, StringComparison.Ordinal)
             Assert.Equal(1, count)
         End Sub
 
@@ -76,7 +76,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.DoesNotContain("NestedMethod", result)
+            Assert.DoesNotContain("NestedMethod", result, StringComparison.Ordinal)
             Assert.Equal(0, count)
         End Sub
 
@@ -90,8 +90,8 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("IWorker.DoWork()", result)
-            Assert.Contains("IWorker.Status", result)
+            Assert.Contains("IWorker.DoWork()", result, StringComparison.Ordinal)
+            Assert.Contains("IWorker.Status", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -106,9 +106,9 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("Point.X", result)
-            Assert.Contains("Point.Y", result)
-            Assert.DoesNotContain("Point.Z", result)
+            Assert.Contains("Point.X", result, StringComparison.Ordinal)
+            Assert.Contains("Point.Y", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("Point.Z", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -122,8 +122,8 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("MathObj.+(MathObj, MathObj)", result)
-            Assert.Contains("MathObj.implicit(MathObj)", result)
+            Assert.Contains("MathObj.+(MathObj, MathObj)", result, StringComparison.Ordinal)
+            Assert.Contains("MathObj.implicit(MathObj)", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -133,7 +133,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim count As Integer = 0
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("MyCallback(string)", result)
+            Assert.Contains("MyCallback(string)", result, StringComparison.Ordinal)
             Assert.Equal(1, count)
         End Sub
 
@@ -153,10 +153,10 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
             ' Assert
-            Assert.Contains("PublicField", result)
-            Assert.Contains("PublicEvent", result)
-            Assert.Contains("CustomEvent", result)
-            Assert.DoesNotContain("PrivateField", result)
+            Assert.Contains("PublicField", result, StringComparison.Ordinal)
+            Assert.Contains("PublicEvent", result, StringComparison.Ordinal)
+            Assert.Contains("CustomEvent", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("PrivateField", result, StringComparison.Ordinal)
             Assert.Equal(3, count)
         End Sub
 

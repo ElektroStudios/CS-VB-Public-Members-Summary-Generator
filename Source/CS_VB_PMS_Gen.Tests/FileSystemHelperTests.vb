@@ -156,7 +156,7 @@ Public Class FileSystemHelperTests
         Dim ex As ArgumentOutOfRangeException = Assert.Throws(Of ArgumentOutOfRangeException)(
             Function() FileSystemHelper.ReadSampleBytes(fakePath, 0))
 
-        Assert.Contains("maxBytes", ex.Message)
+        Assert.Contains("maxBytes", ex.Message, StringComparison.Ordinal)
 
     End Sub
 
@@ -279,7 +279,7 @@ Public Class FileSystemHelperTests
             Dim ex As InvalidOperationException = Assert.Throws(Of InvalidOperationException)(
                 Function() FileSystemHelper.ReadSampleBytes(filePath, maxBytes:=10, throwIfMaxBytesExceedsFileSize:=True))
 
-            Assert.Contains("less than the requested maximum bytes", ex.Message)
+            Assert.Contains("less than the requested maximum bytes", ex.Message, StringComparison.Ordinal)
 
         End Using
 

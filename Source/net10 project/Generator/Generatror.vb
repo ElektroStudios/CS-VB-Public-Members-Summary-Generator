@@ -174,6 +174,8 @@ Friend Module Generator
     ''' <exception cref="InvalidOperationException">
     ''' Thrown when the source code contains syntax errors or unsupported constructs.
     ''' </exception>
+    '''
+    ''' <exception cref="InvalidEnumArgumentException"></exception>
     <DebuggerStepperBoundary>
     Public Function GenerateSummaryRegion(sourceCode As String, language As SourceLanguage,
                                     ByRef refPublicMembersCount As Integer) As String
@@ -384,6 +386,8 @@ Friend Module Generator
     ''' enumeration entries extracted from the source code, formatted as strings;
     ''' Or an empty list if no publicly accessible enumerations are found.
     ''' </param>
+    '''
+    ''' <exception cref="InvalidOperationException"></exception>
     <DebuggerStepThrough>
     Private Sub ParseCSharpCode(sourceCode As String,
                           ByRef refCtors As SortedSet(Of String),
@@ -815,6 +819,8 @@ Friend Module Generator
     ''' enumeration entries extracted from the source code, formatted as strings;
     ''' Or an empty list if no publicly accessible enumerations are found.
     ''' </param>
+    '''
+    ''' <exception cref="InvalidOperationException"></exception>
     <DebuggerStepThrough>
     Private Sub ParseVisualBasicCode(sourceCode As String,
                                ByRef refCtors As SortedSet(Of String),
@@ -1081,23 +1087,24 @@ Friend Module Generator
                     returnType = operatorStatement.AsClause.Type.ToString().Trim()
                 End If
 
-                Dim operatorName As String
-                If operatorStatement.OperatorToken.IsKind(Vb.SyntaxKind.CTypeKeyword) Then
+                Dim operatorName As String =
+                    If(operatorStatement.OperatorToken.IsKind(Vb.SyntaxKind.CTypeKeyword),
+                        "CType",
+                        operatorStatement.OperatorToken.Text)
 
-                    If operatorStatement.Modifiers.Any(Function(m) m.IsKind(Vb.SyntaxKind.WideningKeyword)) Then
-                        operatorName = "CType"
-
-                    ElseIf operatorStatement.Modifiers.Any(Function(m) m.IsKind(Vb.SyntaxKind.NarrowingKeyword)) Then
-                        operatorName = "CType"
-
-                    Else
-                        operatorName = "CType"
-
-                    End If
-                Else
-
-                    operatorName = operatorStatement.OperatorToken.Text
-                End If
+                ' Incase we need to differentiate between Widening and Narrowing CType operators, we can use the following logic:
+                'Dim operatorName As String
+                'If operatorStatement.OperatorToken.IsKind(Vb.SyntaxKind.CTypeKeyword) Then
+                '    If operatorStatement.Modifiers.Any(Function(m As SyntaxToken) m.IsKind(Vb.SyntaxKind.WideningKeyword)) Then
+                '        operatorName = "Widening CType"
+                '    ElseIf operatorStatement.Modifiers.Any(Function(m As SyntaxToken) m.IsKind(Vb.SyntaxKind.NarrowingKeyword)) Then
+                '        operatorName = "Narrowing CType"
+                '    Else
+                '        operatorName = "CType"
+                '    End If
+                'Else
+                '    operatorName = operatorStatement.OperatorToken.Text
+                'End If
 
                 refOperators.Add($"' {containingTypeName}.{operatorName}({params}) As {returnType}")
             End If
@@ -1175,6 +1182,8 @@ Friend Module Generator
     ''' <see langword="True"/> if the member is considered publicly accessible; 
     ''' otherwise, <see langword="False"/>.
     ''' </returns>
+    '''
+    ''' <exception cref="InvalidEnumArgumentException"></exception>
     <DebuggerStepThrough>
     Private Function IsPubliclyAccessible(modifiers As SyntaxTokenList, language As SourceLanguage) As Boolean
 
@@ -1224,6 +1233,8 @@ Friend Module Generator
     ''' <see langword="True"/> if all parent types are accessible; 
     ''' otherwise <see langword="False"/>.
     ''' </returns>
+    '''
+    ''' <exception cref="InvalidEnumArgumentException"></exception>
     <DebuggerStepThrough>
     Private Function IsParentChainAccessible(node As SyntaxNode, language As SourceLanguage) As Boolean
 
@@ -1342,6 +1353,8 @@ Friend Module Generator
             End If
         Next token
 
+#Disable Warning IDE0046 ' Convert to conditional expression
+
         ' A partial type does not need to specify its access modifier in every one of its parts:
         ' it is enough that one part specifies it, and the others can omit it.
         ' The real accessibility can't be known from a single file, so the type gets the benefit of the doubt.
@@ -1352,6 +1365,7 @@ Friend Module Generator
 
         Return Generator.IsPubliclyAccessible(modifiers, SourceLanguage.CSharp)
 
+#Enable Warning IDE0046 ' Convert to conditional expression
     End Function
 
     ''' <summary>
@@ -1440,6 +1454,8 @@ Friend Module Generator
     ''' <see langword="True" /> if the node has the <c>EditorBrowsable(EditorBrowsableState.Never)</c> attribute; 
     ''' otherwise, <see langword="False" />.
     ''' </returns>
+    '''
+    ''' <exception cref="InvalidEnumArgumentException"></exception>
     <DebuggerStepThrough>
     Private Function HasEditorBrowsableNeverAttribute(node As SyntaxNode, language As SourceLanguage) As Boolean
 
@@ -1464,7 +1480,7 @@ Friend Module Generator
                     For Each attribute In attributeList.Attributes
                         Dim attributeName As String = attribute.Name.ToString()
 
-                        If attributeName.Contains(EditorBrowsableAttributeName) Then
+                        If attributeName.Contains(EditorBrowsableAttributeName, StringComparison.Ordinal) Then
 
                             If attribute.ArgumentList IsNot Nothing Then
 
@@ -1473,7 +1489,7 @@ Friend Module Generator
                                 For Each argument In attribute.ArgumentList.Arguments
                                     Dim argumentValue As String = argument.ToString()
 
-                                    If argumentValue.Contains(EditorBrowsableStateNeverValue) Then
+                                    If argumentValue.Contains(EditorBrowsableStateNeverValue, StringComparison.Ordinal) Then
                                         Return True
                                     End If
 
@@ -1530,7 +1546,7 @@ Friend Module Generator
                     For Each attribute In attributeList.Attributes
                         Dim attributeName As String = attribute.Name.ToString()
 
-                        If attributeName.Contains(EditorBrowsableAttributeName) Then
+                        If attributeName.Contains(EditorBrowsableAttributeName, StringComparison.Ordinal) Then
 
                             If attribute.ArgumentList IsNot Nothing Then
 
@@ -1539,7 +1555,7 @@ Friend Module Generator
                                 For Each argument In attribute.ArgumentList.Arguments
                                     Dim argumentValue As String = argument.ToString()
 
-                                    If argumentValue.Contains(EditorBrowsableStateNeverValue) Then
+                                    If argumentValue.Contains(EditorBrowsableStateNeverValue, StringComparison.Ordinal) Then
                                         Return True
                                     End If
 
@@ -1587,6 +1603,9 @@ Friend Module Generator
     ''' <exception cref="ArgumentNullException">
     ''' Thrown when <paramref name="node"/> is null.
     ''' </exception>
+    '''
+    ''' <exception cref="InvalidOperationException"></exception>
+    ''' <exception cref="InvalidEnumArgumentException"></exception>
     <DebuggerStepThrough>
     Private Function GetContainingTypeName(node As SyntaxNode, language As SourceLanguage) As String
 
@@ -1673,7 +1692,7 @@ Friend Module Generator
 
         End Select
 
-        Return String.Join(".", typeNames)
+        Return String.Join("."c, typeNames)
     End Function
 
     ''' <summary>
@@ -1708,14 +1727,14 @@ Friend Module Generator
         ' Explicit bounds, like "Arr(5)" or "Matrix(2, 3)". The number of dimensions is the number of bounds.
         If identifier.ArrayBounds IsNot Nothing Then
             suffix.Append("("c)
-            suffix.Append(New String(","c, Math.Max(identifier.ArrayBounds.Arguments.Count - 1, 0)))
+            suffix.Append(","c, Math.Max(identifier.ArrayBounds.Arguments.Count - 1, 0))
             suffix.Append(")"c)
         End If
 
         ' Rank specifiers, like "Names()" or "Jagged()()".
         For Each rankSpecifier As VbSyntax.ArrayRankSpecifierSyntax In identifier.ArrayRankSpecifiers
             suffix.Append("("c)
-            suffix.Append(New String(","c, rankSpecifier.CommaTokens.Count))
+            suffix.Append(","c, rankSpecifier.CommaTokens.Count)
             suffix.Append(")"c)
         Next rankSpecifier
 
@@ -1743,6 +1762,8 @@ Friend Module Generator
     ''' A string containing the parameter types separated by commas, 
     ''' or an empty string if there are no parameters.
     ''' </returns>
+    '''
+    ''' <exception cref="InvalidEnumArgumentException"></exception>
     <DebuggerStepThrough>
     Private Function GetParameterTypes(parameterListNode As SyntaxNode, language As SourceLanguage) As String
 

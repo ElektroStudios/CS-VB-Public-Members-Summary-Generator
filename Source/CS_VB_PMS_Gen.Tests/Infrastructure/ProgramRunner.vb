@@ -140,6 +140,8 @@ Friend NotInheritable Class ProgramRunner
     ''' <exception cref="TimeoutException">
     ''' The process did not exit in time.
     ''' </exception>
+    '''
+    ''' <exception cref="FileNotFoundException"></exception>
     Public Shared Function Run(arguments As IEnumerable(Of String),
                       Optional tempDirectoryPath As String = Nothing,
                       Optional workingDirectoryPath As String = Nothing) As ProgramRunResult

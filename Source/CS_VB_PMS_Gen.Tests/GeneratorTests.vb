@@ -92,7 +92,7 @@ Namespace CS_VB_PMS_Gen.Tests
         ''' </summary>
         Private Shared Function SplitLines(text As String) As String()
 
-            Return text.Replace(vbCrLf, vbLf).Split(ControlChars.Lf)
+            Return text.Replace(vbCrLf, vbLf, StringComparison.Ordinal).Split(ControlChars.Lf)
 
         End Function
 
@@ -116,9 +116,9 @@ Namespace CS_VB_PMS_Gen.Tests
 
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.CSharp, count)
 
-            Assert.Contains("PublicMethod", result)
-            Assert.Contains("PublicProp", result)
-            Assert.DoesNotContain("Hidden", result)
+            Assert.Contains("PublicMethod", result, StringComparison.Ordinal)
+            Assert.Contains("PublicProp", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("Hidden", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -136,9 +136,9 @@ Namespace CS_VB_PMS_Gen.Tests
 
             Dim result As String = Generator.GenerateSummaryRegion(code, SourceLanguage.VisualBasic, count)
 
-            Assert.Contains("PublicMethod", result)
-            Assert.Contains("PublicProp", result)
-            Assert.DoesNotContain("Hidden", result)
+            Assert.Contains("PublicMethod", result, StringComparison.Ordinal)
+            Assert.Contains("PublicProp", result, StringComparison.Ordinal)
+            Assert.DoesNotContain("Hidden", result, StringComparison.Ordinal)
             Assert.Equal(2, count)
         End Sub
 
@@ -275,7 +275,7 @@ Namespace CS_VB_PMS_Gen.Tests
 
             Dim text As String = GeneratorOutput.Generate(code, language).Text
 
-            Assert.Equal(text, text.Replace(vbCrLf, vbLf).Replace(vbLf, Environment.NewLine))
+            Assert.Equal(text, text.Replace(vbCrLf, vbLf, StringComparison.Ordinal).Replace(vbLf, Environment.NewLine, StringComparison.Ordinal))
 
         End Sub
 
@@ -344,8 +344,8 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim output As GeneratorOutput = GeneratorOutput.CSharp("public class C { public void M() {} }")
 
             Assert.Equal(New String() {"Methods"}, output.FoundSections.ToArray())
-            Assert.DoesNotContain("Constructors", output.Text)
-            Assert.DoesNotContain("Enumerations", output.Text)
+            Assert.DoesNotContain("Constructors", output.Text, StringComparison.Ordinal)
+            Assert.DoesNotContain("Enumerations", output.Text, StringComparison.Ordinal)
 
         End Sub
 
@@ -366,7 +366,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim underlineCount As Integer = 0
 
             For i As Integer = 0 To lines.Length - 1
-                If lines(i).IndexOf(GeneratorOutput.UnderlineChar) >= 0 Then
+                If lines(i).IndexOf(GeneratorOutput.UnderlineChar, StringComparison.Ordinal) >= 0 Then
                     underlineCount += 1
                     Assert.Equal(expectedUnderline, lines(i))
                     Assert.StartsWith($"{token} ", lines(i - 1), StringComparison.Ordinal)
@@ -532,8 +532,8 @@ Namespace CS_VB_PMS_Gen.Tests
 
             Dim language As SourceLanguage = CType([Enum].Parse(GetType(SourceLanguage), languageName), SourceLanguage)
             Dim code As String = If(language = SourceLanguage.CSharp, GeneratorTests.CSharpAllKinds, GeneratorTests.VisualBasicAllKinds)
-            Dim lfCode As String = code.Replace(vbCrLf, vbLf)
-            Dim crCode As String = code.Replace(vbCrLf, vbCr)
+            Dim lfCode As String = code.Replace(vbCrLf, vbLf, StringComparison.Ordinal)
+            Dim crCode As String = code.Replace(vbCrLf, vbCr, StringComparison.Ordinal)
 
             Dim expected As String = GeneratorTests.WithoutHeader(GeneratorOutput.Generate(code, language).Text)
 
@@ -616,7 +616,7 @@ Namespace CS_VB_PMS_Gen.Tests
             Dim ex As InvalidOperationException = Assert.Throws(Of InvalidOperationException)(
                 Function() Generator.GenerateSummaryRegion(code, language, count))
 
-            Assert.Contains("Syntax compilation error", ex.Message)
+            Assert.Contains("Syntax compilation error", ex.Message, StringComparison.Ordinal)
 
         End Sub
 
