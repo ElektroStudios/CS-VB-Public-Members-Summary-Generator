@@ -1,6 +1,15 @@
 ﻿# CS-VB Public Members Summary Generator Change Log 📋
 
-## v1.1 *(current)* 🆕
+## v1.2 *(current)* 🆕
+
+### Fixes
+- Refined file-name exclusion matching by separating exact file names from suffixes, preventing false positives on user files whose names merely contain an excluded term (e.g., `MyAssemblyInfo.cs`).
+
+### Improvements
+- Added `GlobalSuppressions.*`, `Reference.*`, and `*.AssemblyInfo.*` to the list of automatically skipped files.
+- Expanded recursive directory exclusions to skip `.git`, `.vs`, `packages`, and `TestResults` subdirectories in addition to `bin` and `obj`.
+
+## v1.1
 
 ### Fixes
 - Visual Basic: Types, delegates and enums declared without an access modifier at file or namespace level are `Friend`, so they are no longer listed as public.
